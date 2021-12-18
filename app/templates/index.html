@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.10.1/mdb.min.css" rel="stylesheet" />
+    <title>Bookando</title>
+</head>
+
+<body>
+    <div id="app">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand">Bookando</a>
+                <button class="navbar-toggler" type="button" data-mdb-toggle="collapse"
+                    data-mdb-target="#navbarButtonsExample" aria-controls="navbarButtonsExample" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarButtonsExample">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#">Início</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Sobre o Projeto</a>
+                        </li>
+                    </ul>
+                    <div class="d-flex align-items-center">
+                        <button type="button" class="btn btn-primary me-3">
+                            Entrar
+                        </button>
+                        <button type="button" class="btn btn-primary me-3">
+                            Cadastrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <div class="container">
+            <div class="row m-3">
+                <form v-on:submit="busca">
+                    <div class="input-group">
+                        <div class="form-outline">
+                            <input type="search" id="form1" class="form-control" name="busca" v-model="textoBusca" />
+                            <label class="form-label" for="form1">Busca</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="row">
+                <div class="card m-5" v-for="livro in livros" style="width: 18rem;">
+                    <div v-if="livro.volumeInfo.imageLinks">
+                        <img v-bind:src="livro.volumeInfo.imageLinks.thumbnail" class="card-img-top"
+                            alt="Fissure in Sandstone" />
+                        <div class="card-body">
+                            <h5 class="card-title">[[ livro.volumeInfo.title ]]</h5>
+                            <p class="card-text">
+                                [[ livro.volumeInfo.authors[0] ]]
+                            </p>
+                            <button class="btn btn-primary" v-on:click="verMais(livro)">Ver Mais</button>
+                        </div>
+                    </div>
+                    <div v-else>
+                        <div class="card-body">
+                            <h5 class="card-title">[[ livro.volumeInfo.title ]]</h5>
+                            <p class="card-text">
+                                [[ livro.volumeInfo.authors[0] ]]
+                            </p>
+                            <button type="button" class="btn btn-primary" v-on:click="verMais(livro)">Ver Mais</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.10.1/mdb.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script>
+        new Vue({
+            delimiters: ['[[', ']]'],
+            el: '#app',
+            data: {
+                textoBusca: null,
+                livros: null,
+            },
+            methods: {
+                busca: function (e) {
+                    e.preventDefault();
+                    if (this.textoBusca == null || this.textoBusca == "") {
+                        return;
+                    }
+                    fetch(`https://www.googleapis.com/books/v1/volumes?q=${this.textoBusca}&key=AIzaSyCZyt7FNEVc0RwmCIWmcx831Aoj6Ppr6so&fields=kind,items(volumeInfo(title,subtitle,authors,description,pageCount,categories,averageRating,imageLinks(thumbnail)))&orderBy=relevance`, { method: "GET" })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data.items);
+                            this.livros = data.items;
+                        });
+                },
+                verMais: function (livro) {
+                    localStorage.setItem('livro', JSON.stringify(livro));
+                    window.location.href = "{% url 'ver_mais' %}";
+                },
+                reseta: function() {
+                    if (localStorage.getItem('livro')) {
+                        localStorage.removeItem('livro');
+                    }
+                }
+            },
+            beforeMount() {
+                this.reseta();
+            }
+        });
+    </script>
+</body>
+
+</html>
