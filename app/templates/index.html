@@ -65,7 +65,7 @@
                             <p class="card-text">
                                 [[ livro.volumeInfo.authors[0] ]]
                             </p>
-                            <button class="btn btn-primary" v-on:click="verMais(livro)">Ver Mais</button>
+                            <button type="button" class="btn btn-primary" v-on:click="verMais(livro)">Ver Mais</button>
                         </div>
                     </div>
                     <div v-else>
@@ -81,7 +81,6 @@
             </div>
         </div>
     </div>
-
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.10.1/mdb.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
@@ -102,7 +101,6 @@
                     fetch(`https://www.googleapis.com/books/v1/volumes?q=${this.textoBusca}&key=AIzaSyCZyt7FNEVc0RwmCIWmcx831Aoj6Ppr6so&fields=kind,items(volumeInfo(title,subtitle,authors,description,pageCount,categories,averageRating,imageLinks(thumbnail)))&orderBy=relevance`, { method: "GET" })
                         .then(response => response.json())
                         .then(data => {
-                            console.log(data.items);
                             this.livros = data.items;
                         });
                 },
@@ -110,7 +108,7 @@
                     localStorage.setItem('livro', JSON.stringify(livro));
                     window.location.href = "{% url 'ver_mais' %}";
                 },
-                reseta: function() {
+                reseta: function () {
                     if (localStorage.getItem('livro')) {
                         localStorage.removeItem('livro');
                     }

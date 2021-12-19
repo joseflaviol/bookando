@@ -42,15 +42,26 @@
             </div>
         </nav>
         <div class="container m-5">
-            <div class="row justify-content-start">
-                <div class="col-4">
-                    <h2>[[ livro.volumeInfo.title ]]</h2>
-                    <h5>[[ livro.volumeInfo.authors[0] ]]</h5>
-                    <img v-bind:src="livro.volumeInfo.imageLinks.thumbnail" class="img-fluid rounded" alt="...">
+            <div class="row d-flex align-items-start justify-content-evenly">
+                <div class="col-4 d-flex justify-content-center">
+                    <div>
+                        <h2>[[ livro.volumeInfo.title ]]</h2>
+                        <h5>[[ livro.volumeInfo.authors[0] ]]</h5>
+                        <img v-bind:src="livro.volumeInfo.imageLinks.thumbnail" class="img-fluid rounded" alt="...">
+                    </div>
                 </div>
-                <div class="col-4">
-                    <h4>Descrição</h4>
-                    <p>[[ livro.volumeInfo.description ]]</p>
+                <div class="col-4 d-flex justify-content-center">
+                    <div>
+                        <h4>Descrição</h4>
+                        <p>[[ livro.volumeInfo.description ]]</p>
+                        <h4><b>Número de páginas</b>: [[ livro.volumeInfo.pageCount ]]</h4>
+                    </div>
+                </div>
+                <div class="col-4 d-flex justify-content-center">
+                    <div class="btn-group-vertical" role="group" aria-label="Vertical button group">
+                        <button type="button" class="btn btn-primary bg-success" v-on:click="favorito()" ref="botaoFavorito">Adicionar aos Favoritos</button>
+                        <button type="button" class="btn btn-primary bg-info" v-on:click="futuraLeitura()" ref="botaoFuturaLeitura">Adicionar as Futuras Leituras</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -62,14 +73,35 @@
             delimiters: ['[[', ']]'],
             el: '#app',
             data: {
-                livro: null
+                eh_favorito: false,
+                eh_futura_leitura: false,
+                livro: null,
             },
             methods: {
-                getLivro: function () {
+                getLivro: function() {
                     this.livro = JSON.parse(localStorage.getItem('livro'));
+                    console.log(this.livro);
                     if (this.livro == null) {
                         window.location.replace("{% url 'index' %}");
                     }
+                },
+                favorito: function() {
+                    let botao = this.$refs.botaoFavorito;
+                    this.mudaBotao(botao, this.eh_favorito, "bg-danger", this.eh_favorito ? "Adicionar aos Favoritos" : "Remover dos Favoritos");
+                    this.eh_favorito = !this.eh_favorito;
+                },
+                futuraLeitura: function() {
+                    let botao = this.$refs.botaoFuturaLeitura;
+                    this.mudaBotao(botao, this.eh_futura_leitura, "bg-dark", this.eh_futura_leitura ? "Adicionar as Futuras Leituras" : "Remover das Futuras Leituras");
+                    this.eh_futura_leitura = !this.eh_futura_leitura;
+                },
+                mudaBotao: function(botao, remove, classe, texto) {
+                    if (remove) {
+                        botao.classList.remove(classe);
+                    } else {
+                        botao.classList.add(classe);
+                    }
+                    botao.innerHTML = texto;
                 }
             },
             beforeMount() {
