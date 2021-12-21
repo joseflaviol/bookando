@@ -30,14 +30,27 @@
                             <a class="nav-link" href="#">Sobre o Projeto</a>
                         </li>
                     </ul>
+                    {% if perfil_logado %}
                     <div class="d-flex align-items-center">
                         <button type="button" class="btn btn-primary me-3">
+                            {{ perfil_logado.first_name }}
+                        </button>
+                        <button type="button" class="btn btn-danger me-3" onclick="window.location.href='{% url 'logout' %}'">
+                            Sair
+                        </button>
+                    </div>
+                    {% else %}
+                    <div class="d-flex align-items-center">
+                        <button type="button" class="btn btn-primary me-3" data-mdb-toggle="modal"
+                            data-mdb-target="#loginModal">
                             Entrar
                         </button>
-                        <button type="button" class="btn btn-primary me-3">
+                        <button type="button" class="btn btn-primary me-3" data-mdb-toggle="modal"
+                            data-mdb-target="#cadastroModal">
                             Cadastrar
                         </button>
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </nav>
@@ -80,6 +93,93 @@
                 </div>
             </div>
         </div>
+        {% if not perfil_logado %}
+        <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Área de Acesso</h5>
+                        <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="">
+                            <div class="input-group mb-3 flex-nowrap">
+                                <span class="input-group-text" id="addon-wrapping">@</span>
+                                <input type="text" class="form-control" placeholder="Nome de Usuário"
+                                    aria-label="Username" aria-describedby="addon-wrapping"
+                                    v-model="dadosUsuarioLogin.nomeUsuario" />
+                            </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" id="inputGroup-sizing-default">Senha</span>
+                                <input type="password" class="form-control" aria-label="Sizing example input"
+                                    aria-describedby="inputGroup-sizing-default" v-model="dadosUsuarioLogin.senha" />
+                            </div>
+                            <div v-if="erro" class="alert alert-danger" role="alert">
+                                [[ msgErro ]]
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal" v-on:click="reseta()">
+                            Fechar
+                        </button>
+                        <button type="button" class="btn btn-warning" data-mdb-target="#cadastroModal"
+                            data-mdb-toggle="modal" data-mdb-dismiss="modal" v-on:click="reseta()">Criar Conta</button>
+                        <button type="button" class="btn btn-success" v-on:click="login()">Entrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="cadastroModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Área de Cadastro</h5>
+                        <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="">
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">Primeiro e último nome</span>
+                                <input type="text" aria-label="First name" class="form-control"
+                                    v-model="dadosUsuarioCadastro.primeiroNome" />
+                                <input type="text" aria-label="Last name" class="form-control"
+                                    v-model="dadosUsuarioCadastro.segundoNome" />
+                            </div>
+                            <div class="input-group mb-3 flex-nowrap">
+                                <span class="input-group-text" id="addon-wrapping">@</span>
+                                <input type="text" class="form-control" placeholder="Nome de Usuário"
+                                    aria-label="Username" aria-describedby="addon-wrapping"
+                                    v-model="dadosUsuarioCadastro.nomeUsuario" />
+                            </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" id="inputGroup-sizing-default">Email</span>
+                                <input type="email" class="form-control" aria-label="Sizing example input"
+                                    aria-describedby="inputGroup-sizing-default" v-model="dadosUsuarioCadastro.email" />
+                            </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" id="inputGroup-sizing-default">Senha</span>
+                                <input type="password" class="form-control" aria-label="Sizing example input"
+                                    aria-describedby="inputGroup-sizing-default" v-model="dadosUsuarioCadastro.senha" />
+                            </div>
+                            <div v-if="erro" class="alert alert-danger" role="alert">
+                                [[ msgErro ]]
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal" v-on:click="reseta()">
+                            Fechar
+                        </button>
+                        <button type="button" class="btn btn-warning" data-mdb-target="#loginModal"
+                            data-mdb-toggle="modal" data-mdb-dismiss="modal" v-on:click="reseta()">Já possui uma
+                            conta</button>
+                        <button type="button" class="btn btn-success" v-on:click="cadastro()">Criar Conta</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.10.1/mdb.min.js"></script>
@@ -89,6 +189,21 @@
             delimiters: ['[[', ']]'],
             el: '#app',
             data: {
+                {% if not perfil_logado %}
+                erro: false,
+                msgErro: null,
+                dadosUsuarioCadastro: {
+                    primeiroNome: null,
+                    ultimoNome: null,
+                    nomeUsuario: null,
+                    email: null,
+                    senha: null
+                },
+                dadosUsuarioLogin: {
+                    nomeUsuario: null,
+                    senha: null
+                },
+                {% endif %}
                 textoBusca: null,
                 livros: null,
             },
@@ -108,7 +223,50 @@
                     localStorage.setItem('livro', JSON.stringify(livro));
                     window.location.href = "{% url 'ver_mais' %}";
                 },
+                {% if not perfil_logado %}
+                login: function () {
+                    if (this.dadosUsuarioLogin.nomeUsuario != null && this.dadosUsuarioLogin.nomeUsuario != "" && this.dadosUsuarioLogin.senha != null && this.dadosUsuarioLogin.senha != "") {
+                        this.enviaDados("{% url 'login' %}", this.dadosUsuarioLogin);
+                    } else {
+                        this.erro = true;
+                        this.msgErro = "Preencha todos os campos.";
+                    }
+                },
+                cadastro: function () {
+                    if (this.dadosUsuarioCadastro.primeiroNome != null && this.dadosUsuarioCadastro.primeiroNome != "" &&
+                        this.dadosUsuarioCadastro.segundoNome != null && this.dadosUsuarioCadastro.segundoNome != "" &&
+                        this.dadosUsuarioCadastro.nomeUsuario != null && this.dadosUsuarioCadastro.nomeUsuario != "" &&
+                        this.dadosUsuarioCadastro.email != null && this.dadosUsuarioCadastro.email != "" &&
+                        this.dadosUsuarioCadastro.senha != null && this.dadosUsuarioCadastro.senha != "") {
+                            this.enviaDados("{% url 'cadastro' %}", this.dadosUsuarioCadastro);
+                    } else {
+                            this.erro = true;
+                            this.msgErro = "Preencha todos os campos.";
+                    }
+                },
+                enviaDados: function (url, dados) {
+                    fetch(url, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            'X-CSRFToken': "{{ csrf_token }}"
+                        },
+                        mode: "same-origin",
+                        body: JSON.stringify(dados)
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.ok === true) {
+                                window.location.href = "";
+                            } else {
+                                this.erro = true;
+                                this.msgErro = data.msg;
+                            }
+                        });
+                },
+                {% endif %}
                 reseta: function () {
+                    this.erro = false;
                     if (localStorage.getItem('livro')) {
                         localStorage.removeItem('livro');
                     }
